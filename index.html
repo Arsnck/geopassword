@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geo-password</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/script.js" defer></script>
+    <!-- Include any external libraries like Leaflet for the map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Geo-password</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="about.html">About</a>
+        </nav>
+    </header>
+
+    <main>
+        <div id="map"></div>
+        <div id="controls">
+            <label for="altitude">Altitude:</label>
+            <input type="number" id="altitude" name="altitude" step="0.1" required>
+            <button id="generate-password">Generate Password</button>
+        </div>
+        <div id="result">
+            <h3>Your Generated Password:</h3>
+            <p id="password-output"></p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Geo-password. All rights reserved.</p>
+    </footer>
+</body>
+</html>
