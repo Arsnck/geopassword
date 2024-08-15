@@ -7,10 +7,27 @@ body {
 }
 
 header {
-    background-color: #333;
-    color: #fff;
-    padding: 10px 20px;
-    text-align: center;
+    display: flex;
+    justify-content: space-between; /* Distributes space between items */
+    align-items: center; /* Aligns items vertically centered */
+    padding: 10px 20px; /* Adjust padding as needed */
+    background-color: #333; /* Background color */
+    color: white; /* Text color */
+}
+
+header h1 {
+    font-size: 1.5rem; /* Adjust font size as needed */
+}
+
+header nav a {
+    color: white; /* Link color */
+    text-decoration: none; /* Remove underline from links */
+    margin-left: 15px; /* Space between links */
+    font-size: 1rem; /* Font size for links */
+}
+
+header nav a:hover {
+    text-decoration: underline; /* Underline on hover */
 }
 
 nav a {
