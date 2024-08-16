@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Replace 'your-mapbox-access-token' with your actual Mapbox token
-    const mapboxAccessToken = 'hehehaha';
+    const mapboxAccessToken = '';
 
 
     const satellite = L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`, {
@@ -20,7 +20,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const map = L.map('map', {
         center: [0, 0],
         zoom: 2,
-        layers: [streets]
+        layers: [streets],
+        worldCopyJump: false, // Disable infinite scroll by duplicating the world
+        maxBounds: [[-90, -180], [90, 180]], // Set bounds to prevent infinite scrolling
+        maxBoundsViscosity: 1.0, // Prevent the user from panning out of bounds
     });
 
     const baseLayers = {
@@ -29,10 +32,13 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     L.control.layers(baseLayers).addTo(map);
+    
 
     const geocoder = L.Control.geocoder({
         defaultMarkGeocode: false
     })
+
+
     .on('markgeocode', function(e) {
         const bbox = e.geocode.bbox;
         const poly = L.polygon([
@@ -48,25 +54,32 @@ document.addEventListener('DOMContentLoaded', function () {
     })
     .addTo(map);
 
-    let selectedLatLng;
+    
     let currentMarker = null;
+    let roundedLat;
+    let roundedLng;
 
     function addMarker(latlng) {
-        selectedLatLng = latlng;
 
+        selectedLL = latlng;
+        
         if (currentMarker) {
             map.removeLayer(currentMarker);
         }
 
-        const roundedLat = selectedLatLng.lat.toFixed(4);
-        const roundedLng = selectedLatLng.lng.toFixed(4);
+        displayLat = parseFloat(latlng.lat).toFixed(4)
+        displayLng = parseFloat(latlng.lng).toFixed(4)
+        roundedLat = (parseFloat(latlng.lat) + 90).toFixed(4)
+        roundedLng = (parseFloat(latlng.lng) + 180).toFixed(4)
 
-        currentMarker = L.marker([selectedLatLng.lat, selectedLatLng.lng]).addTo(map)
-            .bindPopup(`<b>Lat:</b> ${roundedLat}<br><b>Lng:</b> ${roundedLng}`)
+        // console.log(typeof(roundedLat));
+    
+        currentMarker = L.marker([latlng.lat, latlng.lng]).addTo(map)
+            .bindPopup(`<b>Lat:</b> ${displayLat}<br><b>Lng:</b> ${displayLng}`)
             .openPopup();
 
         // Update the coordinates display in the popup
-        currentMarker.getPopup().setContent(`<b>Lat:</b> ${roundedLat}<br><b>Lng:</b> ${roundedLng}`).openOn(map);
+        currentMarker.getPopup().setContent(`<b>Lat:</b> ${displayLat}<br><b>Lng:</b> ${displayLng}`).openOn(map);
     }
 
     map.on('click', function (e) {
@@ -76,45 +89,69 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('generate-password').addEventListener('click', function () {
         const altitude = document.getElementById('altitude').value;
 
-        if (selectedLatLng && altitude) {
-            const password = generatePassword(selectedLatLng.lat, selectedLatLng.lng, altitude);
-            document.getElementById('password-output').textContent = password;
-            showModal();
+        if (roundedLat && roundedLng && altitude) {
+            if(roundedLat > 180 || roundedLat < 0 || roundedLng > 360 || roundedLng < 0){
+                alert("Please make sure your latitude and longitude are within bounds.\nIf you are getting this error you probably scrolled too far on the map.");
+            }else{
+                const password = generatePassword(roundedLat, roundedLng, altitude);
+                document.getElementById('password-output').textContent = password;
+                showModal();
+            }
         } else {
             alert("Please select a location and enter an altitude.");
         }
     });
 
-    // function generatePassword(lat, lng, altitude) {
-    //     const roundedLat = lat.toFixed(4); // Round to 4 decimal places
-    //     const roundedLng = lng.toFixed(4); // Round to 4 decimal places
-    //     const rawString = `${roundedLat}${roundedLng}${altitude}`;
-    //     return btoa(rawString); // Encode the string in base64
-    // }
+
+    function lcg(seed, steps) { //Linear Congruential Generator
+        
+        const a = BigInt('6364136223846793005');
+        const c = BigInt(1); 
+        const m = BigInt('18446744073709551616'); // 2^64
+
+       
+        let x = BigInt(seed);
+
+        for (let i = 0; i < steps; i++) {
+            x = (a * x + c) % m;
+        }
+
+        return x;
+    }
+
+
 
     function generatePassword(latitude, longitude, altitude) {
-        // Ensure inputs are formatted correctly
-        latitude = Math.round(parseFloat(latitude) * 10000);
-        longitude = Math.round(parseFloat(longitude) * 10000);
-        altitude = parseInt(altitude, 10);
         
-        // Combine the values using XOR and addition
-        let combinedValue = latitude ^ longitude ^ altitude;
+        // lat and lng are normalized to get rid of negative values.
+        // (using absolute value would result in each pair of coordinates sharing 4 locations)
+
+        latitude+=90;
+        longitude+=180;
+        console.log(latitude);
+        console.log(longitude);
+        // Ensure inputs are formatted correctly
+        latitude*=10000;
+        longitude*=10000;
+        seed = parseInt("" + latitude + longitude)
+        steps = parseInt(altitude, 10);
+
+        randnum = BigInt(lcg(seed, steps))
+
         
         // Define a character set for the password
-        const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;:,.<>?';
-        const charactersLength = characters.length;
+        const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_+[]{}?';
+        const charLen = BigInt(characters.length);
     
         // Convert the combined value to a password
         let password = '';
-        for (let i = 0; i < 12; i++) {
-            // Use modulo to get an index in the character set
-            const index = Math.abs(combinedValue) % charactersLength;
+        while(randnum > 0){
+            const index = randnum % charLen;
             password += characters[index];
-            
-            // Update combinedValue for next character
-            combinedValue = Math.floor(combinedValue / charactersLength);
+            randnum = randnum / charLen;
         }
+
+        console.log(password)
         
         return password;
     }
