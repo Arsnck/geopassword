@@ -1,6 +1,10 @@
 document.addEventListener('DOMContentLoaded', function () {
+
+    
+
+
     // Replace 'your-mapbox-access-token' with your actual Mapbox token
-    const mapboxAccessToken = '';
+    const mapboxAccessToken = 'pk.eyJ1IjoiYXJzYW5pY2siLCJhIjoiY2x6dXJpOTNnMGNpdDJrcHR6NHlybXN5cyJ9.AXzP-FudWZR_bCzed9rMPQ';
 
 
     const satellite = L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`, {
