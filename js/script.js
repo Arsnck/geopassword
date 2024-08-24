@@ -1,9 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     
-
-
-    // Replace 'your-mapbox-access-token' with your actual Mapbox token
     const mapboxAccessToken = 'pk.eyJ1IjoiYXJzYW5pY2siLCJhIjoiY2x6dXJpOTNnMGNpdDJrcHR6NHlybXN5cyJ9.AXzP-FudWZR_bCzed9rMPQ';
 
 
